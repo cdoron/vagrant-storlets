@@ -1,0 +1,13 @@
+* Intro
+
+This is a simple vagrant project to automate storlets installation of
+[[https://github.com/openstack/storlets][OpenStack Swift Storlets]].
+
+On a modern linux you need to run:
+
+#+BEGIN_SRC shell
+sudo apt-get install vagrant
+git clone https://github.com/SmartInfrastructures/vagrant-storlets.git
+cd vagrant-storlets
+vagrant up
+#+END_SRC
