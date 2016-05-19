@@ -1,0 +1,13 @@
+#!/bin/sh
+
+mkdir -p /vagrant/ws
+cd /vagrant/ws
+
+# NOTE: It seems that storlets need to chown some file to root so it
+# can not be checked out in shared dir, revert to our home
+
+cd /home/vagrant
+git clone https://github.com/openstack/storlets.git
+
+cd storlets
+./s2aio.sh 1

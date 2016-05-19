@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# See <https://github.com/openstack/storlets/blob/master/README.md>
+apt-get update
+apt-get install --yes python-tox python-nose git
+
+# Minimun versio of sudo, see also
+# <http://stackoverflow.com/a/4024263>
+
+SUDO_VERSION_MIN="1.8.10p3"
+SUDO_VERSION="$(sudo --version | awk '{print $NF; exit}')"
+
+if dpkg --compare-versions "${SUDO_VERSION}" ge "${SUDO_VERSION}";
+then
+    sudo -i -u vagrant -- /vagrant/provision/provision_vagrant
+else
+    sudo --login --user vagrant -- /vagrant/provision/provision_vagrant
+fi
