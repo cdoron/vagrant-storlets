@@ -12,6 +12,9 @@ git clone https://github.com/openstack/storlets.git
 # NOTE: we need to ssh to ourself, if not ansible will fails with
 # strange errors, note that there is no need to do an interactive
 # TOFU, I guess because of some vagrant customization of ssh config
+# Generate the key
+ssh-keygen -q -t rsa -f ~/.ssh/id_rsa -N ""
+# Allow the connection from ourself
 cat "${HOME}/.ssh/id_rsa.pub" >> "${HOME}/.ssh/authorized_keys"
 
 cd storlets
