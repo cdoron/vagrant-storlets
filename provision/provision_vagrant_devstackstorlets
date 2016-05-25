@@ -170,7 +170,13 @@ cp ${HOME}/storlets/install/storlets/common.yml deploy/common.yml
 ANSIBLE_HOST_KEY_CHECKING=False
 export ANSIBLE_HOST_KEY_CHECKING
 
+mkdir -p /vagrant/ws/devstackstorlets
+
 annotate-output \
     ansible-playbook -vvvv \
     -i ${HOME}/hosts_for_ansible install/storlets/storlet.yml | \
-    tee /vagrant/install.log
+    tee /vagrant/ws/devstackstorlets/install.log
+
+annotate-output \
+    ./.functests | \
+    tee -a /vagrant/ws/devstackstorlets/test.log

@@ -17,5 +17,18 @@ ssh-keygen -q -t rsa -f ~/.ssh/id_rsa -N ""
 # Allow the connection from ourself
 cat "${HOME}/.ssh/id_rsa.pub" >> "${HOME}/.ssh/authorized_keys"
 
+
+# For our convenience
+sudo apt-get install --yes devscripts
+
 cd storlets
-./s2aio.sh 1
+
+mkdir -p /vagrant/ws/storlets
+
+annotate-output \
+    ./s2aio.sh 1 | \
+    tee /vagrant/ws/storlets/install.log
+
+annotate-output \
+    ./.functests | \
+    tee -a /vagrant/ws/storlets/test.log
