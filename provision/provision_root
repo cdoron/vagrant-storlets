@@ -3,7 +3,7 @@
 # See <https://github.com/openstack/storlets/blob/master/README.md>
 apt-get update
 apt-get install --yes python-tox python-nose git
-
+apt-get install --yes python-pexpect
 # Minimun versio of sudo, see also
 # <http://stackoverflow.com/a/4024263>
 
