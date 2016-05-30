@@ -89,68 +89,78 @@ cd ${WS}/devstack; ./stack.sh
 # Storlets
 mkdir -p /home/vagrant/lxc_device
 
-cat <<EOF > ${HOME}/storlets/install/storlets/common.yml
----
-# A cross nodes directory for Storlets internal usage. Must exist with
-# the same name in all proxy and storage nodes.
-
-lxc_device: /home/vagrant/lxc_device
-
-# A pointer to this repo
-
-storlet_source_dir: /home/vagrant/storlets
-
-# Swift Access information. The below IP should be an IP of one of the
-# proxies.
-
-swift_endpoint_host: 127.0.0.1 
-swift_public_url: http://{{ swift_endpoint_host }}:80/v1
-
-# Keystone access information
-keystone_endpoint_host: 127.0.0.1
-keystone_admin_url: http://{{ keystone_endpoint_host }}:35357/v2.0
-keystone_public_url: http://{{ keystone_endpoint_host }}:5000/v2.0
-keystone_admin_token: a682f596-76f3-11e3-b3b2-e716f9080d55
-# keystone_admin_password: secrete
-
-# Information for creating an account for the Storlet manager
-storlet_management_account: storlet_management
-storlet_management_admin_username: storlet_manager
-storlet_manager_admin_password: storlet_manager
-
-# Information for creating a Storlet enabled account
-storlets_default_tenant_name: service
-storlets_default_tenant_user_name: swift
-storlets_default_tenant_user_password: sweetforme
-
-swift_user_id: 1000
-swift_group_id: 1000
-
-# middleware and gateway config file constants
-storlet_execute_on_proxy_only: false
-EOF
-
-cat <<EOF > ${HOME}/hosts_for_ansible
-127.0.0.1 ansible_ssh_user=vagrant
-
-[docker]
-127.0.0.1
-
-[storlet-mgmt]
-127.0.0.1
-
-[storlet-proxy]
-127.0.0.1
-
-[storlet-storage]
-127.0.0.1
-
-EOF
+#cat <<EOF > ${HOME}/storlets/install/storlets/common.yml
+#---
+## A cross nodes directory for Storlets internal usage. Must exist with
+## the same name in all proxy and storage nodes.
+#
+#lxc_device: /home/vagrant/lxc_device
+#
+## A pointer to this repo
+#
+#storlet_source_dir: /home/vagrant/storlets
+#
+## Swift Access information. The below IP should be an IP of one of the
+## proxies.
+#
+#swift_endpoint_host: 127.0.0.1 
+#swift_public_url: http://{{ swift_endpoint_host }}:80/v1
+#
+## Keystone access information
+#keystone_endpoint_host: 127.0.0.1
+#keystone_admin_url: http://{{ keystone_endpoint_host }}:35357/v2.0
+#keystone_public_url: http://{{ keystone_endpoint_host }}:5000/v2.0
+#keystone_admin_token: a682f596-76f3-11e3-b3b2-e716f9080d55
+## keystone_admin_password: secrete
+#
+## Information for creating an account for the Storlet manager
+#storlet_management_account: storlet_management
+#storlet_management_admin_username: storlet_manager
+#storlet_manager_admin_password: storlet_manager
+#
+## Information for creating a Storlet enabled account
+#storlets_default_tenant_name: service
+#storlets_default_tenant_user_name: swift
+#storlets_default_tenant_user_password: sweetforme
+#
+#swift_user_id: 1000
+#swift_group_id: 1000
+#
+## middleware and gateway config file constants
+#storlet_execute_on_proxy_only: false
+#EOF
+#
+#cat <<EOF > ${HOME}/hosts_for_ansible
+#127.0.0.1 ansible_ssh_user=vagrant
+#
+#[docker]
+#127.0.0.1
+#
+#[storlet-mgmt]
+#127.0.0.1
+#
+#[storlet-proxy]
+#127.0.0.1
+#
+#[storlet-storage]
+#127.0.0.1
+#
+#EOF
 
 # TODO Not in the documentation
 sudo apt-get install --yes ant
-sudo apt-get install --yes openjdk-7-jdk
-sudo apt-get install --yes ansible
+sudo add-apt-repository -y ppa:webupd8team/java
+sudo apt-get update
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections
+sudo apt-get install --force-yes -y oracle-java8-installer
+sudo apt-get install --force-yes -y oracle-java8-set-default
+#sudo apt-get install --yes openjdk-7-jdk
+
+#sudo apt-get install --yes ansible
+sudo apt-get install -y software-properties-common
+sudo apt-add-repository -y ppa:ansible/ansible
+sudo apt-get update
+sudo apt-get install -y ansible
 
 # For our convenience
 sudo apt-get install --yes devscripts
@@ -160,11 +170,11 @@ ant build
 
 
 # TODO The documentation seems wrong about the path of common.yml
-mkdir -p ${HOME}/storlets/install/storlets/deploy
-cp ${HOME}/storlets/install/storlets/common.yml ${HOME}/storlets/install/storlets/deploy/common.yml
+# mkdir -p ${HOME}/storlets/install/storlets/deploy
+# cp ${HOME}/storlets/install/storlets/common.yml ${HOME}/storlets/install/storlets/deploy/common.yml
 
-mkdir deploy
-cp ${HOME}/storlets/install/storlets/common.yml deploy/common.yml
+# mkdir deploy
+# cp ${HOME}/storlets/install/storlets/common.yml deploy/common.yml
 
 # Blindly trust remote host with ansible
 ANSIBLE_HOST_KEY_CHECKING=False
@@ -172,10 +182,18 @@ export ANSIBLE_HOST_KEY_CHECKING
 
 mkdir -p /vagrant/ws/devstackstorlets
 
+#annotate-output \
+#    ansible-playbook -vvvv \
+#    -i ${HOME}/hosts_for_ansible install/storlets/storlet.yml | \
+#    tee /vagrant/ws/devstackstorlets/install.log
+
+cd  ${HOME}/storlets/install/storlets
+
 annotate-output \
-    ansible-playbook -vvvv \
-    -i ${HOME}/hosts_for_ansible install/storlets/storlet.yml | \
+    ./install_storlets.sh 1 |\
     tee /vagrant/ws/devstackstorlets/install.log
+
+cd -
 
 annotate-output \
     ./.functests | \
