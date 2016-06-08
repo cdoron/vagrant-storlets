@@ -6,6 +6,10 @@ set -x
 apt-get update
 apt-get install --yes python-tox python-nose git
 
+# NOTE: this is somewhat hardcoded in strolets, use the same user as
+# the swift runtime user
+install --directory --owner vagrant --group vagrant --  /opt/ibm
+
 # Minimun versio of sudo, see also
 # <http://stackoverflow.com/a/4024263>
 
