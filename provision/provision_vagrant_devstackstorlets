@@ -189,11 +189,17 @@ mkdir -p /vagrant/ws/devstackstorlets
 
 cd  ${HOME}/storlets/install/storlets
 
+# Configure the vagrant user
+sed -i \
+    -e 's/<SWIFT_RUNTIME_USER>\/swift/<SWIFT_RUNTIME_USER>\/vagrant/g' \
+    -e 's/<SWIFT_RUNTIME_GROUP>\/swift/<SWIFT_RUNTIME_GROUP>\/vagrant/g' \
+    install_storlets.sh
+
 annotate-output \
     ./install_storlets.sh 1 |\
     tee /vagrant/ws/devstackstorlets/install.log
 
-cd -
+cd  ${HOME}/storlets
 
 annotate-output \
     ./.functests | \
