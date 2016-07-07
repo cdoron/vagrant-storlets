@@ -40,6 +40,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dm.cpus = LIBVIRT_CPUS
   end
 
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = LIBVIRT_MEMORY
+    vb.cpus = LIBVIRT_CPUS
+  end
+
   config.vm.define "storlets" do |vmc|
     vmc.vm.hostname = "storlets"
     vmc.vm.network "private_network", ip: "192.168.52.101"
@@ -51,6 +56,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       domain.memory = LIBVIRT_MEMORY_HUGE
       domain.cpus = LIBVIRT_CPUS_BIG
     end
+    vmc.vm.provider :virtualbox do |vb|
+      vb.memory = LIBVIRT_MEMORY
+      vb.cpus = LIBVIRT_CPUS
+    end
+
   end
 
   config.vm.define "devstackstorlets" do |vmc|
@@ -63,6 +73,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vmc.vm.provider :libvirt do |domain|
       domain.memory = LIBVIRT_MEMORY_HUGE
       domain.cpus = LIBVIRT_CPUS_BIG
+    end
+    vmc.vm.provider :virtualbox do |vb|
+      vb.memory = LIBVIRT_MEMORY
+      vb.cpus = LIBVIRT_CPUS
     end
   end
 
