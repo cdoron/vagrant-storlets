@@ -24,7 +24,7 @@ cat "${HOME}/.ssh/id_rsa.pub" >> "${HOME}/.ssh/authorized_keys"
 # ./s2aio.sh 1
 
 cd ${WS};
-git clone -b stable/kilo "https://git.openstack.org/openstack-dev/devstack"
+git clone -b stable/liberty "https://git.openstack.org/openstack-dev/devstack"
 
 # NOTE: see the escaping at work in the here document
 
