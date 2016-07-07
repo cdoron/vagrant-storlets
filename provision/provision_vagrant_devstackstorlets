@@ -2,6 +2,7 @@
 
 set -x
 
+HOST_NAME="$(hostname)"
 WS="/vagrant/ws/${HOST_NAME}"
 mkdir -p "${WS}"
 
