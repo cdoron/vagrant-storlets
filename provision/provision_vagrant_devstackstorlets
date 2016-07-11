@@ -24,7 +24,7 @@ cat "${HOME}/.ssh/id_rsa.pub" >> "${HOME}/.ssh/authorized_keys"
 # ./s2aio.sh 1
 
 cd ${WS};
-git clone -b stable/liberty "https://git.openstack.org/openstack-dev/devstack"
+git clone -b stable/mitaka "https://git.openstack.org/openstack-dev/devstack"
 
 # NOTE: see the escaping at work in the here document
 
@@ -87,67 +87,6 @@ EOF
 cd ${WS}/devstack; ./unstack.sh
 cd ${WS}/devstack; ./stack.sh
 
-# Storlets
-mkdir -p /home/vagrant/lxc_device
-
-#cat <<EOF > ${HOME}/storlets/install/storlets/common.yml
-#---
-## A cross nodes directory for Storlets internal usage. Must exist with
-## the same name in all proxy and storage nodes.
-#
-#lxc_device: /home/vagrant/lxc_device
-#
-## A pointer to this repo
-#
-#storlet_source_dir: /home/vagrant/storlets
-#
-## Swift Access information. The below IP should be an IP of one of the
-## proxies.
-#
-#swift_endpoint_host: 127.0.0.1 
-#swift_public_url: http://{{ swift_endpoint_host }}:80/v1
-#
-## Keystone access information
-#keystone_endpoint_host: 127.0.0.1
-#keystone_admin_url: http://{{ keystone_endpoint_host }}:35357/v2.0
-#keystone_public_url: http://{{ keystone_endpoint_host }}:5000/v2.0
-#keystone_admin_token: a682f596-76f3-11e3-b3b2-e716f9080d55
-## keystone_admin_password: secrete
-#
-## Information for creating an account for the Storlet manager
-#storlet_management_account: storlet_management
-#storlet_management_admin_username: storlet_manager
-#storlet_manager_admin_password: storlet_manager
-#
-## Information for creating a Storlet enabled account
-#storlets_default_tenant_name: service
-#storlets_default_tenant_user_name: swift
-#storlets_default_tenant_user_password: sweetforme
-#
-#swift_user_id: 1000
-#swift_group_id: 1000
-#
-## middleware and gateway config file constants
-#storlet_execute_on_proxy_only: false
-#EOF
-#
-#cat <<EOF > ${HOME}/hosts_for_ansible
-#127.0.0.1 ansible_ssh_user=vagrant
-#
-#[docker]
-#127.0.0.1
-#
-#[storlet-mgmt]
-#127.0.0.1
-#
-#[storlet-proxy]
-#127.0.0.1
-#
-#[storlet-storage]
-#127.0.0.1
-#
-#EOF
-
 # TODO Not in the documentation
 sudo apt-get install --yes ant
 sudo add-apt-repository -y ppa:webupd8team/java
@@ -181,27 +120,61 @@ ant build
 ANSIBLE_HOST_KEY_CHECKING=False
 export ANSIBLE_HOST_KEY_CHECKING
 
-mkdir -p /vagrant/ws/devstackstorlets
+# mkdir -p /vagrant/ws/devstackstorlets
 
-#annotate-output \
-#    ansible-playbook -vvvv \
-#    -i ${HOME}/hosts_for_ansible install/storlets/storlet.yml | \
-#    tee /vagrant/ws/devstackstorlets/install.log
+# make the 'service' tenant storlet-enabled
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post -m "storlet-enabled: True"
 
-cd  ${HOME}/storlets/install/storlets
+# create the storlet containers
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post storlet
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post dependency
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post log
 
-# Configure the vagrant user
-sed -i \
-    -e 's/<SWIFT_RUNTIME_USER>\/swift/<SWIFT_RUNTIME_USER>\/vagrant/g' \
-    -e 's/<SWIFT_RUNTIME_GROUP>\/swift/<SWIFT_RUNTIME_GROUP>\/vagrant/g' \
-    install_storlets.sh
+cat "${HOME}/.ssh/id_rsa.pub" >> "${HOME}/.ssh/authorized_keys"
 
-annotate-output \
-    ./install_storlets.sh 1 |\
-    tee /vagrant/ws/devstackstorlets/install.log
+sudo apt-get install --yes python-swiftclient python-pip
 
 cd  ${HOME}/storlets
+${HOME}/storlets/install/install_ansible.sh
+${HOME}/storlets/install/storlets/prepare_storlets_install.sh dev
+
+cd ${HOME}/storlets/install/storlets/deploy
+sed -i s/\"swift\"/\"vagrant\"/g cluster_config.json
+sed -i s/\"test\"/\"service\"/g cluster_config.json
+sed -i s/\"tester\"/\"swift\"/g cluster_config.json
+sed -i s/\"testing\"/\"secrete\"/g cluster_config.json
+sed -i s/\"1003\"/\"1000\"/g cluster_config.json
+
+cd  ${HOME}/storlets/install/storlets
+ansible-playbook -s -i storlets_dynamic_inventory.py cluster_check.yml
+ansible-playbook -s -i storlets_dynamic_inventory.py docker_cluster.yml
+ansible-playbook -s -i storlets_dynamic_inventory.py host_side_storlet_engine.yml
+
+sed -i "s/recon object-server/recon storlet_handler object-server/g" /etc/swift/object-server/1.conf
+cat <<EOF >> /etc/swift/object-server/1.conf
+
+[filter:storlet_handler]
+use = egg:storlets#storlet_handler
+storlet_container = storlet
+storlet_dependency = dependency
+storlet_timeout = 40
+storlet_gateway_module = storlet_gateway.gateways.docker:StorletGatewayDocker
+storlet_gateway_conf = /etc/swift/storlet_docker_gateway.conf
+storlet_execute_on_proxy_only = false
+execution_server = object
+EOF
+
+sudo swift-init stop all
+
+# if there are remaining swift processes, kill them
+ps aux | grep swift- | awk '{print $2}' | xargs kill -9
+sudo swift-init start main
+
+cd  ${HOME}/storlets
+sudo pip install -r test-requirements.txt
+cp ./install/storlets/deploy/cluster_config.json .
 
 annotate-output \
-    ./.functests | \
+    ./.functests dev | \
     tee -a /vagrant/ws/devstackstorlets/test.log
+
