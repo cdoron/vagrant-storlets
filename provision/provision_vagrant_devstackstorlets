@@ -4,7 +4,7 @@ set -x
 
 INSTALL_LIBERTY=0
 
-if [ "devstackstorletsliberty" = "$0" ];
+if [ "devstackstorletsliberty" = "$1" ];
 then
     INSTALL_LIBERTY=1
 fi
