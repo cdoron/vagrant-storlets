@@ -24,7 +24,13 @@ cat "${HOME}/.ssh/id_rsa.pub" >> "${HOME}/.ssh/authorized_keys"
 # ./s2aio.sh 1
 
 cd ${WS};
-git clone -b stable/mitaka "https://git.openstack.org/openstack-dev/devstack"
+
+if [ "${INSTALL_LIBERTY}" = "1" ];
+then
+    git clone -b stable/liberty "https://git.openstack.org/openstack-dev/devstack"
+else
+    git clone -b stable/mitaka "https://git.openstack.org/openstack-dev/devstack"
+fi
 
 # NOTE: see the escaping at work in the here document
 

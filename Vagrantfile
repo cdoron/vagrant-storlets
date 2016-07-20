@@ -80,4 +80,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
+  config.vm.define "devstackstorletsliberty" do |vmc|
+    vmc.vm.hostname = "devstackstorletsliberty"
+    vmc.vm.network "private_network", ip: "192.168.52.102"
+    vmc.vm.provision "shell" do |s|
+      s.path = "provision/provision_root_devstackstorlets"
+      s.args = ["devstackstorletsliberty"]
+    end
+    vmc.vm.provider :libvirt do |domain|
+      domain.memory = LIBVIRT_MEMORY_HUGE
+      domain.cpus = LIBVIRT_CPUS_BIG
+    end
+    vmc.vm.provider :virtualbox do |vb|
+      vb.memory = LIBVIRT_MEMORY
+      vb.cpus = LIBVIRT_CPUS
+    end
+  end
+
 end

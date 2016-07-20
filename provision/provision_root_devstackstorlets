@@ -2,6 +2,15 @@
 
 set -x
 
+INSTALL_LIBERTY=0
+
+if [ "devstackstorletsliberty" = "$0" ];
+then
+    INSTALL_LIBERTY=1
+fi
+
+export INSTALL_LIBERTY
+
 # See <https://github.com/openstack/storlets/blob/master/README.md>
 apt-get update
 apt-get install --yes python-tox python-nose git
