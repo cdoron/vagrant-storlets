@@ -27,7 +27,7 @@ SUDO_VERSION="$(sudo --version | awk '{print $NF; exit}')"
 
 if dpkg --compare-versions "${SUDO_VERSION}" ge "${SUDO_VERSION}";
 then
-    sudo -i -u vagrant -- /vagrant/provision/provision_vagrant_devstackstorlets
+    sudo -i -u vagrant -- /vagrant/provision/provision_vagrant_devstackstorlets "$0"
 else
-    sudo --login --user vagrant -- /vagrant/provision/provision_vagrant_devstackstorlets
+    sudo --login --user vagrant -- /vagrant/provision/provision_vagrant_devstackstorlets "$0"
 fi
