@@ -99,6 +99,14 @@ enable_service swift
 
 EOF
 
+if [ "${INSTALL_LIBERTY}" = "1" ];
+then
+cat <<EOF >> ${WS}/devstack/local.conf
+SWIFT_REPO=https://github.com/SmartInfrastructures/swift.git
+SWIFT_BRANCH=stable/liberty
+EOF
+fi
+
 cd ${WS}/devstack; ./unstack.sh
 cd ${WS}/devstack; ./stack.sh
 
