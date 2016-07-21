@@ -145,14 +145,6 @@ export ANSIBLE_HOST_KEY_CHECKING
 
 # mkdir -p /vagrant/ws/devstackstorlets
 
-# make the 'service' tenant storlet-enabled
-swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post -m "storlet-enabled: True"
-
-# create the storlet containers
-swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post storlet
-swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post dependency
-swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post log
-
 cat "${HOME}/.ssh/id_rsa.pub" >> "${HOME}/.ssh/authorized_keys"
 
 sudo apt-get install --yes python-swiftclient python-pip
@@ -196,6 +188,14 @@ sudo swift-init start main
 cd  ${HOME}/storlets
 sudo pip install -r test-requirements.txt
 cp ./install/storlets/deploy/cluster_config.json .
+
+# make the 'service' tenant storlet-enabled
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post -m "storlet-enabled: True"
+
+# create the storlet containers
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post storlet
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post dependency
+swift --os-username=swift --os-password=secrete --os-tenant-name=service --os-auth-url=http://127.0.0.1:5000/v2.0 post log
 
 annotate-output \
     ./.functests dev | \
